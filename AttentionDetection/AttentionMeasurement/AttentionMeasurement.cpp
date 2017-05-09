@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
 {
 	namedWindow("Video", CV_WINDOW_AUTOSIZE);
 	// video file path hardcoded. Change file path as needed
-	VideoCapture capture("F:\\Videos\\classroom video library\\00023.avi"); 
+	VideoCapture capture("..\\data\\test_video2.mp4"); 
 	
 	if (!capture.isOpened())
 		return -1;
