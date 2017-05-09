@@ -9,8 +9,11 @@
 #include <string>
 #include <ostream>
 #include <sstream>
+#include <exception>
 
 using namespace std;
+
+const int TRK_THRESH = 100;
 
 int main(int argc, char* argv[])
 {
@@ -21,18 +24,20 @@ int main(int argc, char* argv[])
 	if (!capture.isOpened())
 		return -1;
 
-	// total number of video frames. Change as needed
-	long number_of_frames = 9541;
+	long number_of_frames = 0;
 	long current_frame;
 	number_of_frames = (int) capture.get(CV_CAP_PROP_FRAME_COUNT);
 	if (number_of_frames == 0)
-		number_of_frames = 9541;
+	{
+		// Empty video file. Return with an error
+		return -1;
+	}
 	Mat frame;
 
 	// Frame number of start. Change as needed
-	current_frame = 1353;
+	current_frame = 0;
 	FaceTracker* faceTracker = FaceTracker::getInstance();
-	faceTracker->frameNumber.set(1353);
+	faceTracker->frameNumber.set(current_frame);
 	cout << "Running Face Tracker..." << std::endl;
 	while(current_frame != number_of_frames)
 	{
@@ -46,16 +51,23 @@ int main(int argc, char* argv[])
 	}
 	vector<Track> faceSet;
 	// merge face tracks.
-    faceTracker->mergeTracks(100);
-	faceSet = faceTracker->getTracks();
-
-	int size = faceSet.size();
-	// Save face tracks to file
-	for (int i = 0; i < size; i++)
+	try
 	{
-		ostringstream convert;
-		convert << i;
-		faceSet[i].save(convert.str()+".txt");
+		// Merge face tracks. Remove face tracks containing faces less than the threshold.
+		faceTracker->mergeTracks(TRK_THRESH);
+		faceSet = faceTracker->getTracks();
+
+		int size = faceSet.size();
+		// Save face tracks to file
+		for (int i = 0; i < size; i++)
+		{
+			ostringstream convert;
+			convert << i;
+			faceSet[i].save(convert.str()+".txt");
+		}
+	}
+	catch (exception &e)
+	{
+		return -1;
 	}
 }
-
